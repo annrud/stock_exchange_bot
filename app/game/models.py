@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,11 +14,11 @@ class Game(BaseModel):
     is_active: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
 
-    users: Mapped[List["GameUser"]] = relationship(
+    users: Mapped[list["GameUser"]] = relationship(
         "GameUser",
         back_populates="game",
     )
-    sessions: Mapped[List["Session"]] = relationship(
+    sessions: Mapped[list["Session"]] = relationship(
         "Session", back_populates="game"
     )
 
@@ -47,7 +46,7 @@ class Session(BaseModel):
     game_id: Mapped[int] = mapped_column(ForeignKey("game.id"), nullable=False)
     game: Mapped["Game"] = relationship("Game", back_populates="sessions")
     is_finished: Mapped[bool] = mapped_column(default=False)
-    stocks: Mapped[List["SessionStock"]] = relationship(
+    stocks: Mapped[list["SessionStock"]] = relationship(
         "SessionStock",
         back_populates="session",
     )
@@ -58,11 +57,11 @@ class Stock(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(default=None)
-    sessions: Mapped[List["SessionStock"]] = relationship(
+    sessions: Mapped[list["SessionStock"]] = relationship(
         "SessionStock",
         back_populates="stock",
     )
-    users: Mapped[List["UserStock"]] = relationship(
+    users: Mapped[list["UserStock"]] = relationship(
         "UserStock", back_populates="stock"
     )
 
@@ -80,9 +79,7 @@ class SessionStock(BaseModel):
     stock_id: Mapped[int] = mapped_column(
         ForeignKey("stock.id"), nullable=False
     )
-    stock: Mapped["Stock"] = relationship(
-        "Stock", back_populates="sessions"
-    )
+    stock: Mapped["Stock"] = relationship("Stock", back_populates="sessions")
     price: Mapped[float] = mapped_column(default=0.0)
 
 

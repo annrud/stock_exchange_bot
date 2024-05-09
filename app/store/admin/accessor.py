@@ -13,15 +13,12 @@ if TYPE_CHECKING:
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(
-        password.encode('utf-8'), salt
-    ).decode('utf-8')
-    return hashed_password
+    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
 def validate_password(password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(
-        password.encode('utf-8'), hashed_password.encode('utf-8')
+        password.encode("utf-8"), hashed_password.encode("utf-8")
     )
 
 
@@ -30,7 +27,7 @@ class AdminAccessor(BaseAccessor):
         self.app = app
         await self.create_admin(
             email=self.app.config.admin.email,
-            password=self.app.config.admin.password
+            password=self.app.config.admin.password,
         )
 
     async def get_by_email(self, email: str) -> AdminModel | None:
@@ -44,10 +41,7 @@ class AdminAccessor(BaseAccessor):
         existing_admin = await self.get_by_email(email)
         if existing_admin:
             return existing_admin
-        admin = AdminModel(
-            email=email,
-            password=hash_password(password)
-        )
+        admin = AdminModel(email=email, password=hash_password(password))
         async with AsyncSession(self.app.database.engine) as session:
             session.add(admin)
             await session.commit()

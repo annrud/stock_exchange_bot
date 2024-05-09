@@ -36,7 +36,7 @@ class AdminCurrentView(AuthRequiredMixin, View):
     @docs(
         tags=["admin"],
         summary="Get current admin",
-        description="Get current admin from request"
+        description="Get current admin from request",
     )
     @response_schema(AdminSchema, 200)
     async def get(self):

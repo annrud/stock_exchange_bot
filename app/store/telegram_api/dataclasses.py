@@ -1,5 +1,4 @@
 from dataclasses import asdict, dataclass
-from typing import Dict, List
 
 
 @dataclass
@@ -14,14 +13,14 @@ class InlineKeyboardButton:
 
 @dataclass
 class InlineKeyboardMarkup:
-    inline_keyboard: List[List[InlineKeyboardButton]]
+    inline_keyboard: list[list[InlineKeyboardButton]]
 
 
 @dataclass
 class Message:
     chat_id: str
     text: str = ""
-    reply_markup: Dict[str, InlineKeyboardMarkup] | None = None
+    reply_markup: dict[str, InlineKeyboardMarkup] | None = None
 
 
 @dataclass

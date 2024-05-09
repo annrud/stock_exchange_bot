@@ -43,15 +43,15 @@ class TelegramApiAccessor(BaseAccessor):
 
     async def poll(self):
         async with self.session.get(
-                self._build_query(
-                    host=self.host,
-                    method="getUpdates",
-                    params={
-                        "offset": self.offset,
-                        "timeout": 30,
-                        "allowed_updates": ["message", "callback_query"],
-                    },
-                )
+            self._build_query(
+                host=self.host,
+                method="getUpdates",
+                params={
+                    "offset": self.offset,
+                    "timeout": 30,
+                    "allowed_updates": ["message", "callback_query"],
+                },
+            )
         ) as response:
             data = await response.json()
             self.logger.info(data)
@@ -67,7 +67,7 @@ class TelegramApiAccessor(BaseAccessor):
 
                 if "callback_query" in result:
                     update = parse_callback_query(result)
-                    await self.app.store.bots_manager.handler_update_callback_query(
+                    await self.app.store.bots_manager.handler_update_callback(
                         update
                     )
 
@@ -87,7 +87,7 @@ class TelegramApiAccessor(BaseAccessor):
             self.logger.info(data)
 
     async def answer_callback_query(
-            self, callback_query: CallbackQuery
+        self, callback_query: CallbackQuery
     ) -> None:
         async with self.session.get(
             self._build_query(
@@ -96,7 +96,7 @@ class TelegramApiAccessor(BaseAccessor):
                 params={
                     "callback_query_id": callback_query.callback_id,
                     "text": f"@{callback_query.from_.username} "
-                            "присоединился(ась) к игре.",
+                    "присоединился(ась) к игре.",
                     "cache_time": 60,
                 },
             )
