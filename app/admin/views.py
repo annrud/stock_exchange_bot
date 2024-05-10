@@ -12,8 +12,8 @@ from app.web.utils import json_response
 class AdminLoginView(View):
     @docs(
         tags=["admin"],
-        summary="Add admin",
-        description="Add new admin to database",
+        summary="Admin authentication",
+        description="Authentication by email and password",
     )
     @request_schema(AdminSchema)
     @response_schema(AdminSchema, 200)

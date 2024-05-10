@@ -11,7 +11,7 @@ store: {}
 
 
 session:
-  key: 1ViGyorE0wmhHNzCmJzd9MzdN00ZgdLbnxkJ8wqXwzk=
+  key: 1AAaaBbB1AaaBbB1AaaBbB1AaaBbB1AaaBBbB1AaaBB=
 admin:
   email: admin@admin.com
   password: admin
@@ -23,4 +23,4 @@ database:
   database: stock_exchange
 bot:
   path: https://api.telegram.org/bot
-  token: 7027455562:AAEaBieZLuih1iourWdbTBuS4tKS1aarAaI
+  token: 0000000000:AAaaBbB1AaaBbB1AaaBbB1AaaBbB1AaaBbA

@@ -9,25 +9,26 @@ from app.store.telegram_api.dataclasses import (
 
 
 def parse_message(result: dict) -> Update:
+    msg = result["message"]
+    msg_from = msg["from"]
+    entities = msg.get("entities")
     return Update(
         update_id=result["update_id"],
         object=UpdateObject(
             message=UpdateMessage(
-                message_id=result["message"]["message_id"],
+                message_id=msg["message_id"],
                 from_=User(
-                    telegram_id=result["message"]["from"]["id"],
-                    first_name=result["message"]["from"]["first_name"],
-                    last_name=result["message"]["from"]["last_name"],
-                    username=result["message"]["from"]["username"],
+                    telegram_id=msg_from["id"],
+                    first_name=msg_from["first_name"],
+                    last_name=msg_from["last_name"],
+                    username=msg_from["username"],
                 ),
-                chat_id=result["message"]["chat"]["id"],
-                text=result["message"].get("text"),
-                date=result["message"]["date"],
+                chat_id=msg["chat"]["id"],
+                text=msg.get("text"),
+                date=msg["date"],
                 entities=[
                     MessageEntity(
-                        type=result["message"].get("entities")[-1]["type"]
-                        if result["message"].get("entities")
-                        else None,
+                        type=entities[-1]["type"] if entities else None,
                     )
                 ],
             ),
@@ -36,20 +37,23 @@ def parse_message(result: dict) -> Update:
 
 
 def parse_callback_query(result: dict) -> Update:
+    callback = result["callback_query"]
+    callback_from = callback["from"]
+    callback_msg = callback["message"]
     return Update(
         update_id=result["update_id"],
         object=UpdateObject(
             callback_query=CallbackQuery(
-                callback_id=result["callback_query"]["id"],
+                callback_id=callback["id"],
                 from_=User(
-                    telegram_id=result["callback_query"]["from"]["id"],
-                    first_name=result["callback_query"]["from"]["first_name"],
-                    last_name=result["callback_query"]["from"]["last_name"],
-                    username=result["callback_query"]["from"]["username"],
+                    telegram_id=callback_from["id"],
+                    first_name=callback_from["first_name"],
+                    last_name=callback_from["last_name"],
+                    username=callback_from["username"],
                 ),
-                chat_id=result["callback_query"]["message"]["chat"]["id"],
-                date=result["callback_query"]["message"]["date"],
-                data=result["callback_query"]["data"],
+                chat_id=callback_msg["chat"]["id"],
+                date=callback_msg["date"],
+                data=callback["data"],
             ),
         ),
     )

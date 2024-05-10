@@ -1,16 +1,9 @@
-import os
+from pathlib import Path
 
 from aiohttp.web import run_app
 
 from app.web.app import setup_app
 
 if __name__ == "__main__":
-    run_app(
-        setup_app(
-            config_path=os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "etc",
-                "config.yaml",
-            )
-        )
-    )
+    BASE_DIR = Path(__file__).resolve().parent
+    run_app(setup_app(BASE_DIR / "local/config.yaml"))

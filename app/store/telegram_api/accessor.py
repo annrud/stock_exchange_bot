@@ -19,7 +19,7 @@ class TelegramApiAccessor(BaseAccessor):
         super().__init__(app, *args, **kwargs)
 
         self.session: ClientSession | None = None
-        self.host: str | None = self.app.config.bot.get_token_path
+        self.host: str | None = self.app.config.bot.get_token_path()
         self.poller: Poller | None = None
         self.offset: int | None = None
 

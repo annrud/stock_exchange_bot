@@ -1,5 +1,6 @@
 import typing
 from dataclasses import dataclass
+from pathlib import Path
 
 import yaml
 
@@ -23,7 +24,6 @@ class BotConfig:
     path: str
     token: str
 
-    @property
     def get_token_path(self) -> str:
         return self.path + self.token
 
@@ -45,7 +45,7 @@ class Config:
     database: DatabaseConfig | None = None
 
 
-def setup_config(app: "Application", config_path: str):
+def setup_config(app: "Application", config_path: Path):
     with open(config_path, "r") as f:
         raw_config = yaml.safe_load(f)
 

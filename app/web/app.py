@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from aiohttp.web import (
     Application as AiohttpApplication,
     Request as AiohttpRequest,
@@ -54,7 +56,7 @@ class View(AiohttpView):
 app = Application()
 
 
-def setup_app(config_path: str) -> Application:
+def setup_app(config_path: Path) -> Application:
     setup_logging(app)
     setup_config(app, config_path)
     session_setup(app, EncryptedCookieStorage(app.config.session.key))
