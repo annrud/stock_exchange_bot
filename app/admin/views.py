@@ -8,6 +8,11 @@ from app.web.app import View
 from app.web.mixins import AuthRequiredMixin
 from app.web.utils import json_response
 
+__all__ = (
+    "AdminCurrentView",
+    "AdminLoginView",
+)
+
 
 class AdminLoginView(View):
     @docs(

@@ -1,16 +1,27 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.store.database.sqlalchemy_base import BaseModel
 from app.user.models import User
+
+__all__ = (
+    "Game",
+    "GameUser",
+    "Phrase",
+    "Session",
+    "SessionStock",
+    "Stock",
+    "UserStock",
+)
 
 
 class Game(BaseModel):
     __tablename__ = "game"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    chat_id: Mapped[str] = mapped_column(nullable=False)
     is_active: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
 
@@ -36,6 +47,12 @@ class GameUser(BaseModel):
     )
     game: Mapped["Game"] = relationship("Game", back_populates="users")
     cash_balance: Mapped[float] = mapped_column(default=0.0)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "game_id", name="user_game_unique_constraint"
+        ),
+    )
 
 
 class Session(BaseModel):

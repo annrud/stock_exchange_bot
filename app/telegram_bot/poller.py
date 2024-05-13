@@ -1,18 +1,20 @@
 import asyncio
 from asyncio import Future, Task
+from logging import getLogger
 
-from app.store import Store
+from app.telegram_bot import Bot
 
 
 class Poller:
-    def __init__(self, store: Store) -> None:
-        self.store = store
+    def __init__(self, bot: Bot) -> None:
+        self.bot = bot
+        self.logger = getLogger("poller")
         self.is_running = False
         self.poll_task: Task | None = None
 
     def _done_callback(self, result: Future) -> None:
         if result.exception():
-            self.store.app.logger.exception(
+            self.logger.exception(
                 "poller stopped with exception", exc_info=result.exception()
             )
         if self.is_running:
@@ -30,4 +32,4 @@ class Poller:
         await self.poll_task
 
     async def poll(self) -> None:
-        await self.store.telegram_api.poll()
+        await self.bot.api.poll()

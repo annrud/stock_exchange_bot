@@ -2,6 +2,11 @@ from marshmallow import Schema, fields
 
 from app.web.schemes import OkResponseSchema
 
+__all__ = (
+    "AdminResponseSchema",
+    "AdminSchema",
+)
+
 
 class AdminSchema(Schema):
     id = fields.Int(required=False)

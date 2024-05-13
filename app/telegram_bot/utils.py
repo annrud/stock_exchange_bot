@@ -1,10 +1,10 @@
-from app.store.telegram_api.dataclasses import (
+from app.telegram_bot.dataclasses import (
     CallbackQuery,
+    From,
     MessageEntity,
     Update,
     UpdateMessage,
     UpdateObject,
-    User,
 )
 
 
@@ -17,13 +17,13 @@ def parse_message(result: dict) -> Update:
         object=UpdateObject(
             message=UpdateMessage(
                 message_id=msg["message_id"],
-                from_=User(
+                from_=From(
                     telegram_id=msg_from["id"],
                     first_name=msg_from["first_name"],
-                    last_name=msg_from["last_name"],
-                    username=msg_from["username"],
+                    last_name=msg_from.get("last_name"),
+                    username=msg_from.get("username"),
                 ),
-                chat_id=msg["chat"]["id"],
+                chat_id=str(msg["chat"]["id"]),
                 text=msg.get("text"),
                 date=msg["date"],
                 entities=[
@@ -45,13 +45,13 @@ def parse_callback_query(result: dict) -> Update:
         object=UpdateObject(
             callback_query=CallbackQuery(
                 callback_id=callback["id"],
-                from_=User(
+                from_=From(
                     telegram_id=callback_from["id"],
                     first_name=callback_from["first_name"],
-                    last_name=callback_from["last_name"],
-                    username=callback_from["username"],
+                    last_name=callback_from.get("last_name"),
+                    username=callback_from.get("username"),
                 ),
-                chat_id=callback_msg["chat"]["id"],
+                chat_id=str(callback_msg["chat"]["id"]),
                 date=callback_msg["date"],
                 data=callback["data"],
             ),

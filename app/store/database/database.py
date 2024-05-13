@@ -14,6 +14,8 @@ from app.store.database.sqlalchemy_base import BaseModel
 if TYPE_CHECKING:
     from app.web.app import Application
 
+__all__ = ("Database",)
+
 
 class Database:
     def __init__(self, app: "Application") -> None:

@@ -1,17 +1,19 @@
 import json
-import typing
+from typing import TYPE_CHECKING
 from urllib.parse import urlencode, urljoin
 
 from aiohttp import TCPConnector
 from aiohttp.client import ClientSession
 
 from app.base.base_accessor import BaseAccessor
-from app.store.telegram_api.dataclasses import CallbackQuery, Message
-from app.store.telegram_api.poller import Poller
-from app.store.telegram_api.utils import parse_callback_query, parse_message
+from app.telegram_bot.dataclasses import CallbackQuery, From, Message
+from app.telegram_bot.poller import Poller
+from app.telegram_bot.utils import parse_callback_query, parse_message
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from app.web.app import Application
+
+__all_ = ("TelegramApiAccessor",)
 
 
 class TelegramApiAccessor(BaseAccessor):
@@ -25,7 +27,7 @@ class TelegramApiAccessor(BaseAccessor):
 
     async def connect(self, app: "Application") -> None:
         self.session = ClientSession(connector=TCPConnector(verify_ssl=False))
-        self.poller = Poller(app.store)
+        self.poller = Poller(app.bot)
         self.logger.info("start polling")
         self.poller.start()
 
@@ -41,7 +43,7 @@ class TelegramApiAccessor(BaseAccessor):
         host = f"{host}/method"
         return f"{urljoin(host, method)}?{urlencode(params)}"
 
-    async def poll(self):
+    async def poll(self) -> None:
         async with self.session.get(
             self._build_query(
                 host=self.host,
@@ -61,15 +63,11 @@ class TelegramApiAccessor(BaseAccessor):
                 self.offset = result.get("update_id") + 1
                 if "message" in result:
                     update = parse_message(result)
-                    await self.app.store.bots_manager.handler_update_message(
-                        update
-                    )
+                    await self.app.bot.manager.handler_update_message(update)
 
                 if "callback_query" in result:
                     update = parse_callback_query(result)
-                    await self.app.store.bots_manager.handler_update_callback(
-                        update
-                    )
+                    await self.app.bot.manager.handler_update_callback(update)
 
     async def send_message(self, message: Message) -> None:
         async with self.session.get(
@@ -95,7 +93,7 @@ class TelegramApiAccessor(BaseAccessor):
                 method="answerCallbackQuery",
                 params={
                     "callback_query_id": callback_query.callback_id,
-                    "text": f"@{callback_query.from_.username} "
+                    "text": f"{callback_query.from_.first_name} "
                     "присоединился(ась) к игре.",
                     "cache_time": 60,
                 },
@@ -103,3 +101,18 @@ class TelegramApiAccessor(BaseAccessor):
         ) as response:
             data = await response.json()
             self.logger.info(data)
+
+    async def get_me(self) -> From | None:
+        async with self.session.get(
+            self._build_query(host=self.host, method="getme", params={})
+        ) as response:
+            data = await response.json()
+            self.logger.info(data)
+            result = data.get("result", [])
+            if result:
+                return From(
+                    telegram_id=result["id"],
+                    first_name=result["first_name"],
+                    username=result["username"],
+                )
+            return None

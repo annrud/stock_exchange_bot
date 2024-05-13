@@ -2,24 +2,22 @@ from app.store.database.database import Database
 
 __all__ = ("Store", "setup_store")
 
-import typing
+from typing import TYPE_CHECKING
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from app.web.app import Application
 
 
 class Store:
     def __init__(self, app: "Application"):
         from app.store.admin.accessor import AdminAccessor
-        from app.store.bot.manager import BotManager
-        from app.store.telegram_api.accessor import TelegramApiAccessor
-        from app.user.accessor import UserAccessor
+        from app.store.game.accessor import GameAccessor
+        from app.store.user.accessor import UserAccessor
 
         self.app = app
-        self.telegram_api = TelegramApiAccessor(app)
         self.admins = AdminAccessor(app)
-        self.bots_manager = BotManager(app)
-        self.user = UserAccessor(self)
+        self.user = UserAccessor(app)
+        self.game = GameAccessor(app)
 
 
 def setup_store(app: "Application"):

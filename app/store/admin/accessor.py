@@ -10,6 +10,12 @@ from app.base.base_accessor import BaseAccessor
 if TYPE_CHECKING:
     from app.web.app import Application
 
+__all__ = (
+    "AdminAccessor",
+    "hash_password",
+    "validate_password",
+)
+
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
@@ -24,7 +30,6 @@ def validate_password(password: str, hashed_password: str) -> bool:
 
 class AdminAccessor(BaseAccessor):
     async def connect(self, app: "Application") -> None:
-        self.app = app
         await self.create_admin(
             email=self.app.config.admin.email,
             password=self.app.config.admin.password,

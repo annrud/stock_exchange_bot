@@ -20,11 +20,14 @@ from .routes import setup_routes
 
 __all__ = ("Application", "Request", "View", "setup_app")
 
+from ..telegram_bot import Bot, setup_bot
+
 
 class Application(AiohttpApplication):
     config: Config | None = None
     store: Store | None = None
     database: Database | None = None
+    bot: Bot | None = None
 
 
 class Request(AiohttpRequest):
@@ -68,5 +71,6 @@ def setup_app(config_path: Path) -> Application:
         swagger_path="/docs",
     )
     setup_middlewares(app)
+    setup_bot(app)
     setup_store(app)
     return app

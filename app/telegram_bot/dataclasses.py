@@ -1,5 +1,17 @@
 from dataclasses import asdict, dataclass
 
+__all__ = (
+    "CallbackQuery",
+    "From",
+    "InlineKeyboardButton",
+    "InlineKeyboardMarkup",
+    "Message",
+    "MessageEntity",
+    "Update",
+    "UpdateMessage",
+    "UpdateObject",
+)
+
 
 @dataclass
 class InlineKeyboardButton:
@@ -24,11 +36,11 @@ class Message:
 
 
 @dataclass
-class User:
+class From:
     telegram_id: int
     first_name: str
-    last_name: str
-    username: str
+    last_name: str | None = None
+    username: str | None = None
 
 
 @dataclass
@@ -39,7 +51,7 @@ class MessageEntity:
 @dataclass
 class UpdateMessage:
     message_id: int
-    from_: User
+    from_: From
     chat_id: str
     date: int
     entities: list[MessageEntity]
@@ -49,7 +61,7 @@ class UpdateMessage:
 @dataclass
 class CallbackQuery:
     callback_id: str
-    from_: User
+    from_: From
     chat_id: str | None = None
     data: str | None = None
     date: int | None = None

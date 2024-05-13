@@ -2,6 +2,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.store.database.sqlalchemy_base import BaseModel
 
+__all__ = ("AdminModel",)
+
 
 class AdminModel(BaseModel):
     __tablename__ = "admin"
