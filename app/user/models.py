@@ -8,7 +8,7 @@ from app.store.database.sqlalchemy_base import BaseModel
 models = importlib.import_module("app.game.models")
 
 
-class User(BaseModel):
+class UserModel(BaseModel):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(primary_key=True)

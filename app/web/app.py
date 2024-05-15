@@ -20,7 +20,9 @@ from .routes import setup_routes
 
 __all__ = ("Application", "Request", "View", "setup_app")
 
+from ..game import Game, setup_game
 from ..telegram_bot import Bot, setup_bot
+from ..user import User, setup_user
 
 
 class Application(AiohttpApplication):
@@ -28,6 +30,8 @@ class Application(AiohttpApplication):
     store: Store | None = None
     database: Database | None = None
     bot: Bot | None = None
+    game: Game | None = None
+    user: User | None = None
 
 
 class Request(AiohttpRequest):
@@ -73,4 +77,7 @@ def setup_app(config_path: Path) -> Application:
     setup_middlewares(app)
     setup_bot(app)
     setup_store(app)
+    setup_game(app)
+    setup_user(app)
+
     return app

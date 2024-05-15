@@ -5,29 +5,23 @@ from app.base.base_accessor import BaseAccessor
 
 __all__ = ("UserAccessor",)
 
-from app.telegram_bot.dataclasses import From
-from app.user.models import User
+from app.user.models import UserModel
 
 
 class UserAccessor(BaseAccessor):
-    async def get_user_by_telegram_id(self, telegram_id: int) -> User | None:
+    async def get_user_by_telegram_id(
+        self, telegram_id: int
+    ) -> UserModel | None:
         async with AsyncSession(self.app.database.engine) as session:
             user = await session.execute(
-                select(User).where(User.telegram_id == telegram_id)
+                select(UserModel).filter(UserModel.telegram_id == telegram_id)
             )
-            return user.scalars().first()
+            return user.scalar_one_or_none()
 
-    async def create_user(self, session: AsyncSession, data: From) -> User:
-        existing_user = await self.get_user_by_telegram_id(data.telegram_id)
-        if existing_user:
-            return existing_user
-        user = User(
-            telegram_id=data.telegram_id,
-            first_name=data.first_name,
-            last_name=data.last_name,
-            username=data.username,
-        )
-        session.add(user)
-        await session.commit()
-        await session.refresh(user)
-        return user
+    async def save_user(self, user: UserModel) -> UserModel:
+        async with AsyncSession(self.app.database.engine) as session:
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
+
+            return user

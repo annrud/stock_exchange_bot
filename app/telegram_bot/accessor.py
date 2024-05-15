@@ -85,7 +85,8 @@ class TelegramApiAccessor(BaseAccessor):
             self.logger.info(data)
 
     async def answer_callback_query(
-        self, callback_query: CallbackQuery
+        self,
+        callback_query: CallbackQuery,
     ) -> None:
         async with self.session.get(
             self._build_query(
