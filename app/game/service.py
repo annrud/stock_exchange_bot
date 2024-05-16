@@ -17,12 +17,17 @@ __all__ = ("GameService", "ReplyMarkupService")
 
 
 class ReplyMarkupService:
+    BUY = "Buy_"
+    SELL = "Sell_"
+    SKIP = "Skip_turn"
+
     def __init__(self, app: "Application"):
         self.app = app
         self.logger = getLogger("MessageService")
 
-    def get_reply_markup(
-        self, inline_buttons: list[InlineKeyboardButton]
+    @staticmethod
+    def _get_reply_markup(
+        inline_buttons: list[InlineKeyboardButton],
     ) -> dict[str, InlineKeyboardMarkup]:
         inline_keyboard_markup = InlineKeyboardMarkup(inline_keyboard=[])
 
@@ -46,11 +51,9 @@ class ReplyMarkupService:
                 callback_data="Join_the_game",
             )
         ]
-        return self.get_reply_markup(inline_button)
+        return self._get_reply_markup(inline_button)
 
-    async def create_start_sess(
-        self, players_telegram_id: list[int]
-    ) -> dict[str, InlineKeyboardMarkup] | None:
+    async def create_session(self) -> dict[str, InlineKeyboardMarkup] | None:
         stocks = await self.app.store.game.get_stocks()
         inline_buttons = []
         for stock in stocks:
@@ -58,25 +61,23 @@ class ReplyMarkupService:
                 inline_buttons.append(
                     InlineKeyboardButton(
                         text=f"Купить {stock.title}",
-                        callback_data=f"Buy_{stock.title}_{players_telegram_id}",
+                        callback_data=f"{self.BUY}{stock.title}",
                     )
                 ),
             )
             inline_buttons.append(
                 InlineKeyboardButton(
                     text=f"Продать {stock.title}",
-                    callback_data=f"Sell_{stock.title}_{players_telegram_id}",
+                    callback_data=f"{self.SELL}{stock.title}",
                 )
             )
-
         inline_buttons.append(
             InlineKeyboardButton(
                 text="Пропустить ход",
-                callback_data=f"Skip_turn_{players_telegram_id}",
+                callback_data=self.SKIP,
             )
         )
-
-        return self.get_reply_markup(inline_buttons)
+        return self._get_reply_markup(inline_buttons)
 
 
 class GameService:

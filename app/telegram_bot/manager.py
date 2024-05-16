@@ -40,9 +40,7 @@ class BotManager:
             )
         )
 
-    async def start_session(
-        self, obj_message: UpdateMessage, players_telegram_id: list[int]
-    ) -> None:
+    async def start_session(self, obj_message: UpdateMessage) -> None:
         chat_id = obj_message.chat_id
         game = await self.app.store.game.find_active_game(chat_id=chat_id)
         if game is None:
@@ -61,9 +59,7 @@ class BotManager:
             Message(
                 text="Выберите 👇",
                 chat_id=chat_id,
-                reply_markup=await self.app.game.reply_markup.create_start_sess(
-                    players_telegram_id
-                ),
+                reply_markup=await self.app.game.reply_markup.create_session(),
             )
         )
 
@@ -117,10 +113,8 @@ class BotManager:
             self.logger.info("Game stopped: participants have not joined")
             return
 
-        players_telegram_id: list[int] = []
         players_name: str = ""
         for game_user in game.users:
-            players_telegram_id.append(game_user.user.telegram_id)
             players_name += (
                 f"@{game_user.user.username}\n"
                 if game_user.user.username
@@ -135,9 +129,7 @@ class BotManager:
                 reply_markup={},
             )
         )
-        await self.start_session(
-            obj_message=obj_message, players_telegram_id=players_telegram_id
-        )
+        await self.start_session(obj_message=obj_message)
 
     async def stop(self, obj_message: UpdateMessage) -> None:
         game = await self.app.store.game.find_active_game(obj_message.chat_id)
@@ -202,9 +194,3 @@ class BotManager:
                     from_=obj_callback.from_,
                 ),
             )
-        if obj_callback.data.startswith("Buy_"):
-            _, players_telegram_id = obj_callback.data.split("_")
-            players_id = eval(players_telegram_id)
-            user_telegram_id = obj_callback.from_.telegram_id
-            if user_telegram_id not in players_id:
-                return
