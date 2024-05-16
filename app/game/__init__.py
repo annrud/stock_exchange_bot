@@ -12,7 +12,7 @@ class Game:
 
         self.app = app
         self.service = GameService(app)
-        self.reply_markup_service = ReplyMarkupService(app)
+        self.reply_markup = ReplyMarkupService(app)
 
 
 def setup_game(app: "Application"):

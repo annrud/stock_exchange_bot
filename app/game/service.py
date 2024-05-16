@@ -25,7 +25,10 @@ class ReplyMarkupService:
         self, inline_buttons: list[InlineKeyboardButton]
     ) -> dict[str, InlineKeyboardMarkup]:
         inline_keyboard_markup = InlineKeyboardMarkup(inline_keyboard=[])
-        inline_keyboard_markup.inline_keyboard.append(inline_buttons)
+
+        inline_keyboard_markup.inline_keyboard = [
+            inline_buttons[i : i + 2] for i in range(0, len(inline_buttons), 2)
+        ]
 
         return {
             "inline_keyboard": [
@@ -34,7 +37,7 @@ class ReplyMarkupService:
             ]
         }
 
-    def create_start_reply_markup(
+    def create_start(
         self,
     ) -> dict[str, InlineKeyboardMarkup] | None:
         inline_button = [
@@ -45,24 +48,35 @@ class ReplyMarkupService:
         ]
         return self.get_reply_markup(inline_button)
 
-    def create_start_session_reply_markup(
+    async def create_start_sess(
         self, players_telegram_id: list[int]
     ) -> dict[str, InlineKeyboardMarkup] | None:
-        inline_button = [
-            InlineKeyboardButton(
-                text="Купить",
-                callback_data=f"Buy_{players_telegram_id}",
-            ),
-            InlineKeyboardButton(
-                text="Продать",
-                callback_data=f"Sell_{players_telegram_id}",
-            ),
+        stocks = await self.app.store.game.get_stocks()
+        inline_buttons = []
+        for stock in stocks:
+            (
+                inline_buttons.append(
+                    InlineKeyboardButton(
+                        text=f"Купить {stock.title}",
+                        callback_data=f"Buy_{stock.title}_{players_telegram_id}",
+                    )
+                ),
+            )
+            inline_buttons.append(
+                InlineKeyboardButton(
+                    text=f"Продать {stock.title}",
+                    callback_data=f"Sell_{stock.title}_{players_telegram_id}",
+                )
+            )
+
+        inline_buttons.append(
             InlineKeyboardButton(
                 text="Пропустить ход",
                 callback_data=f"Skip_turn_{players_telegram_id}",
-            ),
-        ]
-        return self.get_reply_markup(inline_button)
+            )
+        )
+
+        return self.get_reply_markup(inline_buttons)
 
 
 class GameService:
@@ -124,8 +138,10 @@ class GameService:
 
     async def get_stock_price(
         self, chat_id: str, session_id: int | None = None
-    ) -> str:
+    ) -> str | None:
         session_stocks = await self.get_session_stock(chat_id, session_id)
+        if session_stocks is None:
+            return None
         stock_price = ""
         for session_stock in session_stocks:
             title = session_stock.stock.title
@@ -145,7 +161,7 @@ class GameService:
             )
             if game_session is None:
                 return None
-            session_id = game_session.session_id
+            session_id = game_session.id
 
         return await self.app.store.game.find_session_stock_by_session_id(
             session_id=session_id

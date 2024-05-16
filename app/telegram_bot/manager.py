@@ -29,7 +29,7 @@ class BotManager:
             chat_id=chat_id, session_id=session_id
         )
         if stock_price is None:
-            text = await self.app.store.game.get_phrase("game_is_not_running")
+            text = await self.app.store.game.get_phrase("no_data_available")
         else:
             text = "Котировки (цена в у.е.):\n" + stock_price
         await self.app.bot.api.send_message(
@@ -61,7 +61,7 @@ class BotManager:
             Message(
                 text="Выберите 👇",
                 chat_id=chat_id,
-                reply_markup=self.app.game.reply_markup_service.create_start_session_reply_markup(
+                reply_markup=await self.app.game.reply_markup.create_start_sess(
                     players_telegram_id
                 ),
             )
@@ -74,6 +74,15 @@ class BotManager:
             self.logger.info(
                 "Calling the /start command while the game is running"
             )
+            await self.app.bot.api.send_message(
+                Message(
+                    chat_id=chat_id,
+                    text=await self.app.store.game.get_phrase(
+                        "game_is_already_running"
+                    ),
+                    reply_markup={},
+                )
+            )
             return
         game = await self.app.game.service.create_game(
             chat_id=chat_id, data=obj_message.from_
@@ -85,7 +94,7 @@ class BotManager:
             Message(
                 chat_id=chat_id,
                 text=await self.app.store.game.get_phrase("text_to_start"),
-                reply_markup=self.app.game.reply_markup_service.create_start_reply_markup(),
+                reply_markup=self.app.game.reply_markup.create_start(),
             )
         )
         try:
@@ -137,6 +146,17 @@ class BotManager:
         user = await self.app.store.user.get_user_by_telegram_id(
             obj_message.from_.telegram_id
         )
+        if game is None:
+            await self.app.bot.api.send_message(
+                Message(
+                    text=await self.app.store.game.get_phrase(
+                        "game_is_already_stopped"
+                    ),
+                    chat_id=obj_message.chat_id,
+                    reply_markup={},
+                )
+            )
+            return
         players_telegram_ids = (
             game_user.user.telegram_id for game_user in game.users
         )
