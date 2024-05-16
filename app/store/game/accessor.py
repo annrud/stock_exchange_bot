@@ -16,8 +16,6 @@ __all__ = ("GameAccessor",)
 
 
 class GameAccessor(BaseAccessor):
-    DEFAULT_CASH_BALANCE: float = 100.0
-
     async def save_game(self, game: GameModel) -> GameModel:
         async with AsyncSession(self.app.database.engine) as session:
             session.add(game)

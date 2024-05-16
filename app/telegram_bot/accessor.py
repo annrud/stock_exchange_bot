@@ -1,4 +1,5 @@
 import json
+from asyncio import Queue
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode, urljoin
 
@@ -8,7 +9,7 @@ from aiohttp.client import ClientSession
 from app.base.base_accessor import BaseAccessor
 from app.telegram_bot.dataclasses import CallbackQuery, From, Message
 from app.telegram_bot.poller import Poller
-from app.telegram_bot.utils import parse_callback_query, parse_message
+from app.telegram_bot.worker import Worker
 
 if TYPE_CHECKING:
     from app.web.app import Application
@@ -22,14 +23,20 @@ class TelegramApiAccessor(BaseAccessor):
 
         self.session: ClientSession | None = None
         self.host: str | None = self.app.config.bot.get_token_path()
+        self.queue = Queue()
         self.poller: Poller | None = None
         self.offset: int | None = None
+        self.worker: Worker | None = None
 
     async def connect(self, app: "Application") -> None:
         self.session = ClientSession(connector=TCPConnector(verify_ssl=False))
-        self.poller = Poller(app.bot)
-        self.logger.info("start polling")
+        self.poller = Poller(app, self.queue)
+        self.worker = Worker(app, self.queue, 2)
         self.poller.start()
+        self.logger.info("start polling")
+
+        await self.worker.start()
+        self.logger.info("start worker")
 
     async def disconnect(self, app: "Application") -> None:
         if self.session:
@@ -37,6 +44,9 @@ class TelegramApiAccessor(BaseAccessor):
 
         if self.poller:
             await self.poller.stop()
+
+        if self.worker:
+            await self.worker.stop()
 
     @staticmethod
     def _build_query(host: str, method: str, params: dict) -> str:
@@ -61,13 +71,8 @@ class TelegramApiAccessor(BaseAccessor):
             if results:
                 result = results[-1]
                 self.offset = result.get("update_id") + 1
-                if "message" in result:
-                    update = parse_message(result)
-                    await self.app.bot.manager.handler_update_message(update)
-
-                if "callback_query" in result:
-                    update = parse_callback_query(result)
-                    await self.app.bot.manager.handler_update_callback(update)
+                return result
+            return None
 
     async def send_message(self, message: Message) -> None:
         async with self.session.get(

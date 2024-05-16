@@ -1,16 +1,18 @@
-import asyncio
-from asyncio import Future, Task
+from asyncio import Future, Queue, Task, create_task
 from logging import getLogger
+from typing import TYPE_CHECKING
 
-from app.telegram_bot import Bot
+if TYPE_CHECKING:
+    from app.web.app import Application
 
 
 class Poller:
-    def __init__(self, bot: Bot) -> None:
-        self.bot = bot
+    def __init__(self, app: "Application", queue: Queue) -> None:
+        self.app = app
         self.logger = getLogger("poller")
         self.is_running = False
-        self.poll_task: Task | None = None
+        self._poll_task: Task | None = None
+        self.queue = queue
 
     def _done_callback(self, result: Future) -> None:
         if result.exception():
@@ -22,14 +24,14 @@ class Poller:
 
     def start(self) -> None:
         self.is_running = True
-
-        self.poll_task = asyncio.create_task(self.poll())
-        self.poll_task.add_done_callback(self._done_callback)
+        self._poll_task = create_task(self.poll())
+        self._poll_task.add_done_callback(self._done_callback)
 
     async def stop(self) -> None:
         self.is_running = False
-
-        await self.poll_task
+        await self._poll_task
 
     async def poll(self) -> None:
-        await self.bot.api.poll()
+        result = await self.app.bot.api.poll()
+        if result:
+            self.queue.put_nowait(result)

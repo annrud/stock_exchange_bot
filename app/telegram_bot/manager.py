@@ -1,6 +1,6 @@
-import asyncio
-import typing
+from asyncio import sleep
 from logging import getLogger
+from typing import TYPE_CHECKING
 
 from app.telegram_bot.dataclasses import (
     CallbackQuery,
@@ -9,7 +9,7 @@ from app.telegram_bot.dataclasses import (
     UpdateMessage,
 )
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from app.web.app import Application
 
 
@@ -97,12 +97,11 @@ class BotManager:
                 reply_markup=self.app.game.reply_markup.create_start(),
             )
         )
-        try:
-            async with asyncio.timeout(30):
-                while True:
-                    await self.app.bot.api.poll()
-        except TimeoutError:
-            self.logger.info("timeout join the game!")
+        await sleep(30)
+        await self.check_players(obj_message=obj_message)
+
+    async def check_players(self, obj_message: UpdateMessage) -> None:
+        chat_id = obj_message.chat_id
         game = await self.app.store.game.find_active_game(chat_id)
         if len(game.users) < 2:
             await self.app.game.service.deactivate_game(game)
@@ -136,7 +135,6 @@ class BotManager:
                 reply_markup={},
             )
         )
-
         await self.start_session(
             obj_message=obj_message, players_telegram_id=players_telegram_id
         )
