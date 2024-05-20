@@ -1,10 +1,26 @@
 debug: true
 web:
   host: 127.0.0.1
-  port: 8000
+  port: 8080
 
 sentry:
   dsn:
   env: dev
 
 store: {}
+
+
+session:
+  key: 1AAaaBbB1AaaBbB1AaaBbB1AaaBbB1AaaBBbB1AaaBB=
+admin:
+  email: admin@admin.com
+  password: admin
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  database: stock_exchange
+bot:
+  path: https://api.telegram.org/bot
+  token: 0000000000:AAaaBbB1AaaBbB1AaaBbB1AaaBbB1AaaBbA
