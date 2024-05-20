@@ -7,6 +7,8 @@ if TYPE_CHECKING:
 
 
 class Game:
+    DEFAULT_CASH_BALANCE: float = 100.0
+
     def __init__(self, app: "Application"):
         from app.game.service import GameService, ReplyMarkupService
 

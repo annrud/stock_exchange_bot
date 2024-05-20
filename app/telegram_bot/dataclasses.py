@@ -1,16 +1,28 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 
 __all__ = (
     "CallbackQuery",
+    "ForceReply",
     "From",
     "InlineKeyboardButton",
     "InlineKeyboardMarkup",
     "Message",
     "MessageEntity",
+    "ReplyMessage",
     "Update",
     "UpdateMessage",
     "UpdateObject",
 )
+
+
+@dataclass
+class ForceReply:
+    force_reply: bool
+    input_field_placeholder: str
+    selective: bool
+
+    def to_dict(self):
+        return asdict(self)
 
 
 @dataclass
@@ -32,7 +44,8 @@ class InlineKeyboardMarkup:
 class Message:
     chat_id: str
     text: str = ""
-    reply_markup: dict[str, InlineKeyboardMarkup] | None = None
+    reply_markup: dict[str, InlineKeyboardMarkup] = field(default_factory=dict)
+    reply_to_message_id: int | None = None
 
 
 @dataclass
@@ -49,6 +62,14 @@ class MessageEntity:
 
 
 @dataclass
+class ReplyMessage:
+    message_id: int
+    from_: From
+    chat_id: str
+    text: str
+
+
+@dataclass
 class UpdateMessage:
     message_id: int
     from_: From
@@ -56,6 +77,7 @@ class UpdateMessage:
     date: int
     entities: list[MessageEntity]
     text: str
+    reply_to_message: ReplyMessage | None = None
 
 
 @dataclass

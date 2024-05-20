@@ -26,6 +26,10 @@ class UserModel(BaseModel):
         "UserStock", back_populates="user"
     )
 
+    exchanges: Mapped[list["models.Exchange"]] = relationship(
+        "Exchange", back_populates="user"
+    )
+
     __table_args__ = (
         UniqueConstraint("telegram_id", name="telegram_id_unique_constraint"),
     )

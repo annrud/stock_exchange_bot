@@ -53,7 +53,7 @@ class TelegramApiAccessor(BaseAccessor):
         host = f"{host}/method"
         return f"{urljoin(host, method)}?{urlencode(params)}"
 
-    async def poll(self) -> None:
+    async def poll(self) -> list | None:
         async with self.session.get(
             self._build_query(
                 host=self.host,
@@ -75,23 +75,26 @@ class TelegramApiAccessor(BaseAccessor):
             return None
 
     async def send_message(self, message: Message) -> None:
+        params = {
+            "chat_id": message.chat_id,
+            "text": message.text,
+        }
+        if message.reply_markup:
+            params["reply_markup"] = json.dumps(message.reply_markup)
+        if message.reply_to_message_id:
+            params["reply_to_message_id"] = message.reply_to_message_id
         async with self.session.get(
             self._build_query(
                 host=self.host,
                 method="sendMessage",
-                params={
-                    "chat_id": message.chat_id,
-                    "text": message.text,
-                    "reply_markup": json.dumps(message.reply_markup),
-                },
+                params=params,
             )
         ) as response:
             data = await response.json()
             self.logger.info(data)
 
     async def answer_callback_query(
-        self,
-        callback_query: CallbackQuery,
+        self, callback_query: CallbackQuery, player_name: str, text: str
     ) -> None:
         async with self.session.get(
             self._build_query(
@@ -99,9 +102,8 @@ class TelegramApiAccessor(BaseAccessor):
                 method="answerCallbackQuery",
                 params={
                     "callback_query_id": callback_query.callback_id,
-                    "text": f"{callback_query.from_.first_name} "
-                    "присоединился(ась) к игре.",
-                    "cache_time": 60,
+                    "text": f"{player_name} {text}",
+                    "cache_time": 30,
                 },
             )
         ) as response:

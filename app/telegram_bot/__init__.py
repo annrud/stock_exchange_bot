@@ -8,13 +8,28 @@ if TYPE_CHECKING:
 
 
 class Bot:
+    BUY = "buy"
+    SELL = "sell"
+    SKIP = "skip"
+    CONTINUE = "continue"
+
     def __init__(self, app: "Application"):
         from app.telegram_bot.accessor import TelegramApiAccessor
-        from app.telegram_bot.manager import BotManager
+        from app.telegram_bot.callback_manager import CallbackManager
+        from app.telegram_bot.message_manager import MessageManager
 
         self.app = app
         self.api = TelegramApiAccessor(app)
-        self.manager = BotManager(app)
+        self.msg_manager = MessageManager(app)
+        self.clb_manager = CallbackManager(app)
+
+    @classmethod
+    def get_description(cls, action):
+        descriptions = {
+            cls.BUY: "купить",
+            cls.SELL: "продать",
+        }
+        return descriptions.get(action, "")
 
 
 def setup_bot(app: "Application"):

@@ -7,6 +7,7 @@ from app.store.database.sqlalchemy_base import BaseModel
 from app.user.models import UserModel
 
 __all__ = (
+    "Exchange",
     "GameModel",
     "GameUser",
     "Phrase",
@@ -30,6 +31,10 @@ class GameModel(BaseModel):
     )
     sessions: Mapped[list["Session"]] = relationship(
         "Session", back_populates="game"
+    )
+    stocks: Mapped[list["UserStock"]] = relationship(
+        "UserStock",
+        back_populates="game",
     )
 
 
@@ -74,6 +79,10 @@ class Session(BaseModel):
         "SessionStock",
         back_populates="session",
     )
+    exchanges: Mapped[list["Exchange"]] = relationship(
+        "Exchange",
+        back_populates="session",
+    )
 
 
 class Stock(BaseModel):
@@ -88,6 +97,14 @@ class Stock(BaseModel):
     )
     users: Mapped[list["UserStock"]] = relationship(
         "UserStock", back_populates="stock"
+    )
+
+    exchanges: Mapped[list["Exchange"]] = relationship(
+        "Exchange", back_populates="stock"
+    )
+
+    __table_args__ = (
+        UniqueConstraint("title", name="stock_title_unique_constraint"),
     )
 
 
@@ -121,13 +138,19 @@ class UserStock(BaseModel):
     stock_id: Mapped[int] = mapped_column(
         ForeignKey("stock.id", ondelete="RESTRICT"), nullable=False
     )
-    buy_quantity: Mapped[int] = mapped_column(default=0)
-    sell_quantity: Mapped[int] = mapped_column(default=0)
+    game_id: Mapped[int] = mapped_column(ForeignKey("game.id"), nullable=False)
+    total_quantity: Mapped[int] = mapped_column(default=0)
 
     user: Mapped["UserModel"] = relationship(
         "UserModel", back_populates="stocks"
     )
-    stock: Mapped["Stock"] = relationship("Stock", back_populates="users")
+    stock: Mapped["Stock"] = relationship(
+        "Stock", back_populates="users", lazy="joined"
+    )
+
+    game: Mapped["GameModel"] = relationship(
+        "GameModel", back_populates="stocks"
+    )
 
 
 class Phrase(BaseModel):
@@ -135,3 +158,32 @@ class Phrase(BaseModel):
 
     key: Mapped[str] = mapped_column(primary_key=True)
     phrase: Mapped[str] = mapped_column(default=None)
+
+
+class Exchange(BaseModel):
+    __tablename__ = "exchange"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    session_id: Mapped[int] = mapped_column(
+        ForeignKey("session.id", ondelete="RESTRICT"), nullable=False
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="RESTRICT"), nullable=False
+    )
+    chat_id: Mapped[str] = mapped_column(nullable=False)
+    action: Mapped[str] = mapped_column(nullable=False)
+    stock_id: Mapped[int] = mapped_column(
+        ForeignKey("stock.id", ondelete="RESTRICT"), nullable=False
+    )
+    quantity: Mapped[int] = mapped_column(default=0)
+    execution_time: Mapped[datetime] = mapped_column(default=datetime.now())
+
+    session: Mapped["Session"] = relationship(
+        "Session", back_populates="exchanges"
+    )
+
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", back_populates="exchanges"
+    )
+
+    stock: Mapped["Stock"] = relationship("Stock", back_populates="exchanges")

@@ -21,10 +21,10 @@ class Worker:
     async def handle_update(self, upd):
         if "message" in upd:
             update = parse_message(upd)
-            await self.app.bot.manager.handler_update_message(update)
+            await self.app.bot.msg_manager.handle_update_message(update)
         if "callback_query" in upd:
             update = parse_callback_query(upd)
-            await self.app.bot.manager.handler_update_callback(update)
+            await self.app.bot.clb_manager.handle_update_callback(update)
 
     async def _worker(self):
         while True:

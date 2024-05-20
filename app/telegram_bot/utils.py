@@ -2,6 +2,7 @@ from app.telegram_bot.dataclasses import (
     CallbackQuery,
     From,
     MessageEntity,
+    ReplyMessage,
     Update,
     UpdateMessage,
     UpdateObject,
@@ -12,7 +13,7 @@ def parse_message(result: dict) -> Update:
     msg = result["message"]
     msg_from = msg["from"]
     entities = msg.get("entities")
-    return Update(
+    update = Update(
         update_id=result["update_id"],
         object=UpdateObject(
             message=UpdateMessage(
@@ -31,9 +32,24 @@ def parse_message(result: dict) -> Update:
                         type=entities[-1]["type"] if entities else None,
                     )
                 ],
-            ),
+                reply_to_message=None,
+            )
         ),
     )
+    reply_to_message = msg.get("reply_to_message")
+    if reply_to_message:
+        update.object.message.reply_to_message = ReplyMessage(
+            message_id=reply_to_message["message_id"],
+            from_=From(
+                telegram_id=reply_to_message["from"]["id"],
+                first_name=reply_to_message["from"]["first_name"],
+                last_name=reply_to_message["from"].get("last_name"),
+                username=reply_to_message["from"].get("username"),
+            ),
+            chat_id=reply_to_message["chat"]["id"],
+            text=reply_to_message["text"],
+        )
+    return update
 
 
 def parse_callback_query(result: dict) -> Update:
