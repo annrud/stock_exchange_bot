@@ -93,31 +93,27 @@ class CallbackManager:
         self, obj_callback: CallbackQuery, player_name: str, game: GameModel
     ) -> None:
         """Обработка нажатия действия 'Пропустить ход'."""
-        await self.app.bot.api.answer_callback_query(
-            callback_query=CallbackQuery(
-                callback_id=obj_callback.callback_id,
-                from_=obj_callback.from_,
-            ),
-            player_name=player_name,
-            text=await self.app.store.game.get_phrase("skip_action"),
-        )
         user = await self.app.store.user.get_user_by_telegram_id(
             telegram_id=obj_callback.from_.telegram_id
         )
         session = await self.app.store.game.find_game_session(game_id=game.id)
-        self.skip[session.id].add(user.id)
-
-        count_of_players = len(game.users)
-        if len(self.skip.get(session.id, [])) == count_of_players:
-            self.skip_all = True
+        if user.id not in self.skip.get(session.id, []):
+            text = await self.app.store.game.get_phrase("skip_action")
+            await self.app.bot.api.send_message(
+                message=Message(
+                    text=f"{player_name} {text}",
+                    chat_id=obj_callback.chat_id,
+                )
+            )
+            self.skip[session.id].add(user.id)
+            count_of_players = len(game.users)
+            if len(self.skip.get(session.id, [])) == count_of_players:
+                self.skip_all = True
 
     async def handle_callback_continue(
         self, obj_callback: CallbackQuery
     ) -> None:
         """Обработка нажатия действия 'Продолжить'."""
-        game = await self.app.store.game.find_active_game(
-            chat_id=obj_callback.chat_id
-        )
         for _ in range(6):
             self.skip_all = False
             game_session = await self.app.bot.msg_manager.start_session(
@@ -134,7 +130,9 @@ class CallbackManager:
             await self.app.bot.msg_manager.get_game_result(
                 chat_id=obj_callback.chat_id
             )
-
+        game = await self.app.store.game.find_active_game(
+            chat_id=obj_callback.chat_id
+        )
         game.is_active = False
         await self.app.store.game.save_game(game)
         await self.app.bot.api.send_message(

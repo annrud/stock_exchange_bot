@@ -63,7 +63,13 @@ class MessageManager:
             if not str_user_stocks:
                 text = f"{user_name}, у вас нет приобретенных акций."
             else:
-                text = f"{user_name}, ваш портфель:\n{str_user_stocks}"
+                game_user = await self.app.store.game.find_game_user(
+                    game_id=game.id, user_id=user.id
+                )
+                text = (
+                    f"{user_name}, ваш портфель:\n{str_user_stocks}\n"
+                    f"Наличные: {game_user.cash_balance} y.e."
+                )
         reply_to_message_id = obj_message.message_id
         await self.app.bot.api.send_message(
             message=Message(
@@ -227,6 +233,7 @@ class MessageManager:
                 )
             )
             return
+        await self.get_game_result(chat_id=chat_id)
         await self.app.game.service.deactivate_game(game=game)
         await self.app.bot.api.send_message(
             message=Message(
@@ -235,7 +242,6 @@ class MessageManager:
             )
         )
         self.logger.info("Game stopped")
-        await self.get_game_result(chat_id=chat_id)
 
     async def get_quantity(self, obj_message: UpdateMessage) -> int | None:
         """Обработка числового ответа пользователя."""
@@ -452,6 +458,9 @@ class MessageManager:
 
     async def get_game_result(self, chat_id: str) -> None:
         game = await self.app.store.game.find_active_game(chat_id=chat_id)
+        if not game:
+            self.logger = getLogger("Active game not found")
+            return
         users = {
             game_user.user_id: f"{self.app.game.service.get_user_name(
                 game_user.user.username, game_user.user.first_name
@@ -474,13 +483,16 @@ class MessageManager:
             user_balance[user_stock.user_id] += (
                 stock_price[user_stock.stock_id] * user_stock.total_quantity
             )
-
-        text = f"Результаты:\n{
-            '\n'.join(
-                [f"{users[key]}: {round(value, 2)}" 
-                 for key, value in user_balance.items()]
-            )
-        }"
+        session_number = session.number
+        text = (
+            "Суммарный денежный баланс игрока (в у.е.) после раунда "
+            f"{session_number}:\n{
+                '\n'.join(
+                    [f"{users[key]}: {round(value, 2)}"
+                     for key, value in user_balance.items()]
+                )
+                }"
+        )
         await self.app.bot.api.send_message(
             message=Message(
                 text=text,

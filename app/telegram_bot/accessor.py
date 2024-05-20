@@ -103,7 +103,7 @@ class TelegramApiAccessor(BaseAccessor):
                 params={
                     "callback_query_id": callback_query.callback_id,
                     "text": f"{player_name} {text}",
-                    "cache_time": 30,
+                    "cache_time": 60,
                 },
             )
         ) as response:

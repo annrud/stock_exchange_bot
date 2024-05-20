@@ -36,4 +36,5 @@ class UserAccessor(BaseAccessor):
     async def get_users(self) -> list[UserModel] | None:
         async with AsyncSession(self.app.database.engine) as session:
             result = await session.execute(select(UserModel))
-            return result.scalars().all()
+            users = result.scalars().all()
+            return users if users else None
