@@ -55,7 +55,7 @@ class ReplyMarkupService:
         """Создание кнопки для присоединения к игре."""
         inline_button = [
             InlineKeyboardButton(
-                text="Присоединиться к игре",
+                text="Присоединиться к игре ☝",
                 callback_data="Join_the_game",
             )
         ]

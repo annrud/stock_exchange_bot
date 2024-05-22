@@ -46,6 +46,7 @@ class Message:
     text: str = ""
     reply_markup: dict[str, InlineKeyboardMarkup] = field(default_factory=dict)
     reply_to_message_id: int | None = None
+    parse_mode: str | None = None
 
 
 @dataclass
