@@ -351,7 +351,8 @@ class MessageManager:
         await self.app.bot.api.send_message(
             message=Message(
                 text=f"Ваш баланс: {new_cash_balance}у.е. "
-                f"Вы приобрели акции {stock.title} 📃 в количестве: {quantity}шт.",
+                f"Вы приобрели акции {stock.title} 📃 "
+                f"в количестве: {quantity}шт.",
                 chat_id=obj_message.chat_id,
                 reply_to_message_id=reply_to_message_id,
             )
@@ -412,7 +413,8 @@ class MessageManager:
         await self.app.bot.api.send_message(
             message=Message(
                 text=f"Ваш баланс: {new_cash_balance}у.е. "
-                f"Вы продали акции {stock.title} 📃 в количестве: {quantity}шт.",
+                f"Вы продали акции {stock.title} 📃 "
+                f"в количестве: {quantity}шт.",
                 chat_id=obj_message.chat_id,
                 reply_to_message_id=reply_to_message_id,
             )

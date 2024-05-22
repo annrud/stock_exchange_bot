@@ -1,4 +1,4 @@
-from aiohttp_apispec import docs, response_schema, querystring_schema
+from aiohttp_apispec import docs, querystring_schema, response_schema
 
 from app.game.models import Exchange
 from app.game.schemas import ExchangeListSchema, ExchangeSchema, UserIdSchema
@@ -20,10 +20,14 @@ class ExchangeListView(AuthRequiredMixin, View):
     async def get(self):
         user_id = self.get_user_id_from_query()
         exchanges = await self.get_exchanges_by_user_id(user_id)
-        raw_exchanges = [ExchangeSchema().dump(exchange) for exchange in exchanges]
+        raw_exchanges = [
+            ExchangeSchema().dump(exchange) for exchange in exchanges
+        ]
         return json_response(data={"exchanges": raw_exchanges})
 
-    async def get_exchanges_by_user_id(self, user_id: int | None) -> list[Exchange]:
+    async def get_exchanges_by_user_id(
+        self, user_id: int | None
+    ) -> list[Exchange]:
         if user_id is None:
             return await self.store.game.get_exchanges()
         return await self.store.game.find_exchanges(user_id=user_id)

@@ -1,4 +1,4 @@
-from asyncio import Future, Queue, Task, create_task
+from asyncio import Queue, Task, create_task
 from logging import getLogger
 from typing import TYPE_CHECKING
 
