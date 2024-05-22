@@ -14,3 +14,7 @@ class ExchangeSchema(Schema):
 
 class ExchangeListSchema(Schema):
     users = fields.Nested(ExchangeSchema, many=True)
+
+
+class UserIdSchema(Schema):
+    user_id = fields.Int()

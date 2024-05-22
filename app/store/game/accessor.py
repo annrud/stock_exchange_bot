@@ -189,3 +189,10 @@ class GameAccessor(BaseAccessor):
         async with AsyncSession(self.app.database.engine) as session:
             result = await session.execute(select(Exchange))
             return result.scalars().all()
+
+    async def find_exchanges(self, user_id: int) -> list[Exchange] | None:
+        async with AsyncSession(self.app.database.engine) as session:
+            result = await session.execute(
+                select(Exchange).filter(Exchange.user_id == user_id)
+            )
+            return result.scalars().all()

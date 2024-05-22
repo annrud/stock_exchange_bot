@@ -67,8 +67,8 @@ class MessageManager:
                     game_id=game.id, user_id=user.id
                 )
                 text = (
-                    f"{user_name}, ваш портфель:\n{str_user_stocks}\n"
-                    f"Наличные: {game_user.cash_balance} y.e."
+                    f"{user_name}, ваш портфель 💼:\n{str_user_stocks}\n"
+                    f"Наличные 💷: {game_user.cash_balance} y.e."
                 )
         reply_to_message_id = obj_message.message_id
         await self.app.bot.api.send_message(
@@ -86,7 +86,7 @@ class MessageManager:
         str_stocks_price = await self.app.game.service.get_str_stocks_price(
             chat_id=chat_id, session_id=session_id
         )
-        text = "Котировки (цена в у.е.):\n" + str_stocks_price
+        text = "🎲 Котировки (цена в у.е.):\n" + str_stocks_price
         await self.app.bot.api.send_message(
             message=Message(
                 text=text,
@@ -198,7 +198,7 @@ class MessageManager:
         session_number = game_session.number
         await self.app.bot.api.send_message(
             message=Message(
-                text=f"Раунд {session_number}. Выберите 👇",
+                text=f"🎯 Раунд {session_number}. Выберите 👇",
                 chat_id=chat_id,
                 reply_markup=await self.app.game.reply_markup.create_session(),
             )
@@ -227,7 +227,7 @@ class MessageManager:
             reply_to_message_id = obj_message.message_id
             await self.app.bot.api.send_message(
                 message=Message(
-                    text="Не имеете прав останавливать игру.",
+                    text="Не имеете прав останавливать игру. 🤖",
                     chat_id=chat_id,
                     reply_to_message_id=reply_to_message_id,
                 )
@@ -249,7 +249,7 @@ class MessageManager:
             reply_to_message_id = obj_message.message_id
             await self.app.bot.api.send_message(
                 message=Message(
-                    text="Введено некорректное количество акций.",
+                    text="Введено некорректное количество акций. 🤖",
                     chat_id=obj_message.chat_id,
                     reply_to_message_id=reply_to_message_id,
                 )
@@ -269,45 +269,45 @@ class MessageManager:
         ):
             self.logger.info("User is not a participant in the game.")
             return
-
-        stock_title, act = self.app.game.service.parse_stock_and_action(
-            text=obj_message.reply_to_message.text
-        ).split()
-        if not stock_title or not act:
-            self.logger.info("Couldn't parse stock_title and action")
-            return
-        quantity = await self.get_quantity(obj_message)
-        if not quantity:
-            self.logger.info("Couldn't parse quantity")
-            return
-        user = await self.app.store.user.get_user_by_telegram_id(
-            telegram_id=user_telegram_id
-        )
-        game_user = await self.app.store.game.find_game_user(
-            user_id=user.id, game_id=game.id
-        )
-        stock = await self.app.store.game.get_stock_by_title(
-            stock_title=stock_title
-        )
-        price = await self.app.game.service.get_price(
-            stock_id=stock.id, game_id=game.id
-        )
-        if act == self.app.bot.get_description(self.app.bot.BUY):
-            await self.buy_stock(
-                obj_message=obj_message,
-                game_user=game_user,
-                quantity=quantity,
-                stock=stock,
-                price=price,
+        if obj_message.reply_to_message.text:
+            stock_title, act = self.app.game.service.parse_stock_and_action(
+                text=obj_message.reply_to_message.text
+            ).split()
+            if not stock_title or not act:
+                self.logger.info("Couldn't parse stock_title and action")
+                return
+            quantity = await self.get_quantity(obj_message)
+            if not quantity:
+                self.logger.info("Couldn't parse quantity")
+                return
+            user = await self.app.store.user.get_user_by_telegram_id(
+                telegram_id=user_telegram_id
             )
-        elif act == self.app.bot.get_description(self.app.bot.SELL):
-            await self.sell_stock(
-                obj_message=obj_message,
-                game_user=game_user,
-                quantity=quantity,
-                stock=stock,
-                price=price,
+            game_user = await self.app.store.game.find_game_user(
+                user_id=user.id, game_id=game.id
             )
+            stock = await self.app.store.game.get_stock_by_title(
+                stock_title=stock_title
+            )
+            price = await self.app.game.service.get_price(
+                stock_id=stock.id, game_id=game.id
+            )
+            if act == self.app.bot.get_description(self.app.bot.BUY):
+                await self.buy_stock(
+                    obj_message=obj_message,
+                    game_user=game_user,
+                    quantity=quantity,
+                    stock=stock,
+                    price=price,
+                )
+            elif act == self.app.bot.get_description(self.app.bot.SELL):
+                await self.sell_stock(
+                    obj_message=obj_message,
+                    game_user=game_user,
+                    quantity=quantity,
+                    stock=stock,
+                    price=price,
+                )
 
     async def buy_stock(
         self,
@@ -326,9 +326,9 @@ class MessageManager:
         if not new_cash_balance:
             await self.app.bot.api.send_message(
                 message=Message(
-                    text=f"Ваш баланс: {cash_balance}у.е. "
+                    text=f"💶 Ваш баланс: {cash_balance}у.е. "
                     f"Недостаточно средств для покупки {quantity} "
-                    f"акций {stock.title} по цене {price}у.е.",
+                    f"акций {stock.title} 📃 по цене {price}у.е.",
                     chat_id=obj_message.chat_id,
                     reply_to_message_id=reply_to_message_id,
                 )
@@ -351,7 +351,8 @@ class MessageManager:
         await self.app.bot.api.send_message(
             message=Message(
                 text=f"Ваш баланс: {new_cash_balance}у.е. "
-                f"Вы приобрели акции {stock.title} в количестве: {quantity}шт.",
+                f"Вы приобрели акции {stock.title} 📃 "
+                f"в количестве: {quantity}шт.",
                 chat_id=obj_message.chat_id,
                 reply_to_message_id=reply_to_message_id,
             )
@@ -385,7 +386,7 @@ class MessageManager:
         if user_stock.total_quantity < quantity:
             await self.app.bot.api.send_message(
                 message=Message(
-                    text=f"Недостаточно акций для выполнения этой сделки."
+                    text=f"Недостаточно акций 📃 для выполнения этой сделки."
                     f"Акции {stock.title} доступны в количестве: "
                     f"{user_stock.total_quantity}шт.",
                     chat_id=obj_message.chat_id,
@@ -412,7 +413,8 @@ class MessageManager:
         await self.app.bot.api.send_message(
             message=Message(
                 text=f"Ваш баланс: {new_cash_balance}у.е. "
-                f"Вы продали акции {stock.title} в количестве: {quantity}шт.",
+                f"Вы продали акции {stock.title} 📃 "
+                f"в количестве: {quantity}шт.",
                 chat_id=obj_message.chat_id,
                 reply_to_message_id=reply_to_message_id,
             )
@@ -485,7 +487,7 @@ class MessageManager:
             )
         session_number = session.number
         text = (
-            "Суммарный денежный баланс игрока (в у.е.) после раунда "
+            "🎰 Суммарный денежный баланс игрока (в у.е.) после раунда "
             f"{session_number}:\n{
                 '\n'.join(
                     [f"{users[key]}: {round(value, 2)}"

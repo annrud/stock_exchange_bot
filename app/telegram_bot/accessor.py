@@ -29,10 +29,14 @@ class TelegramApiAccessor(BaseAccessor):
         self.worker: Worker | None = None
 
     async def connect(self, app: "Application") -> None:
-        self.session = ClientSession(connector=TCPConnector(verify_ssl=False))
+        self.session = ClientSession(
+            connector=TCPConnector(
+                verify_ssl=False,
+            )
+        )
         self.poller = Poller(app, self.queue)
-        self.worker = Worker(app, self.queue, 2)
-        self.poller.start()
+        self.worker = Worker(app, self.queue, 10)
+        await self.poller.start()
         self.logger.info("start polling")
 
         await self.worker.start()
@@ -78,6 +82,7 @@ class TelegramApiAccessor(BaseAccessor):
         params = {
             "chat_id": message.chat_id,
             "text": message.text,
+            "parse_mode": "html",
         }
         if message.reply_markup:
             params["reply_markup"] = json.dumps(message.reply_markup)

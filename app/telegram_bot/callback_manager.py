@@ -137,7 +137,7 @@ class CallbackManager:
         await self.app.store.game.save_game(game)
         await self.app.bot.api.send_message(
             message=Message(
-                text="Игра окончена.",
+                text="Игра окончена. 🤑",
                 chat_id=obj_callback.chat_id,
             )
         )
