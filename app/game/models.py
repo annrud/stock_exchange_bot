@@ -183,7 +183,9 @@ class Exchange(BaseModel):
     )
 
     user: Mapped["UserModel"] = relationship(
-        "UserModel", back_populates="exchanges"
+        "UserModel", back_populates="exchanges", lazy="joined"
     )
 
-    stock: Mapped["Stock"] = relationship("Stock", back_populates="exchanges")
+    stock: Mapped["Stock"] = relationship(
+        "Stock", back_populates="exchanges", lazy="joined"
+    )
