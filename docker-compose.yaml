@@ -3,10 +3,38 @@ volumes:
 
 services:
   db:
+    hostname: db
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: stock_exchange
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    volumes:
+      - stock_exchange_kts:/var/lib/postgresql/data/
     ports:
       - "5432:5432"
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U postgres -d stock_exchange'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/code/app
+      - ./alembic:/code/alembic
+      - ./main.py:/code/main.py
+      - ./alembic.ini:/code/alembic.ini
+      - ./local:/code/local
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/stock_exchange
+    ports:
+      - "8080:8080"

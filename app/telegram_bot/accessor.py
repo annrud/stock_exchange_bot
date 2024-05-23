@@ -35,7 +35,7 @@ class TelegramApiAccessor(BaseAccessor):
             )
         )
         self.poller = Poller(app, self.queue)
-        self.worker = Worker(app, self.queue, 10)
+        self.worker = Worker(app, self.queue, 20)
         await self.poller.start()
         self.logger.info("start polling")
 
